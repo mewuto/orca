@@ -178,6 +178,7 @@ import {
   SetValue,
   TypeText
 } from './computer-schemas-params'
+import { ConditionalWorktreeRemoval } from './conditional-worktree-removal'
 import {
   ConnectorAnswer,
   ConnectorCancel,
@@ -1460,6 +1461,8 @@ export const RPC_PARAMS_BY_METHOD = {
   'worktree.persistSortOrder': WorktreeSortOrder,
   'worktree.prefetchCreateBase': WorktreePrefetchCreateBase,
   'worktree.ps': WorktreePsParams,
+  'worktree.removalCapabilities': null,
+  'worktree.removeIfIdle': ConditionalWorktreeRemoval,
   'worktree.resolveMrBase': WorktreeResolveMrBase,
   'worktree.resolvePrBase': WorktreeResolvePrBase,
   'worktree.rm': WorktreeRemove,
