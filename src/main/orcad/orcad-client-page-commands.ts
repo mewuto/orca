@@ -89,7 +89,7 @@ function createTab(
   forward: Forward,
   engineAvailable: () => boolean
 ): unknown {
-  return withConditionalWorktreeGlobalUse(async () => {
+  return withConditionalWorktreeGlobalUse(() => {
     if (params?.placement?.kind === 'client') {
       const placement = params.placement
       return withConditionalWorktreeGlobalUse(async () => {
@@ -121,7 +121,7 @@ function createTab(
       !browserTabCreateClientPageStartsActive(params?.activate) ||
       host.getRuntimeBrowserPageRegistry().listPages().length === 0
     ) {
-      return forward([params, caller])
+      return Promise.resolve(forward([params, caller]))
     }
     return (async () => {
       const created = await forward([params, caller])
