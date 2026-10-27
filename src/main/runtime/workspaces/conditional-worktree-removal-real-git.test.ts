@@ -127,14 +127,19 @@ describe('conditional removal transaction with real Git fixtures', () => {
         }
       }
       await expect(removeConditionalWorktree(request, deps)).resolves.toMatchObject({
-        status: 'refused', reason: 'outcome_unknown'
+        status: 'refused',
+        reason: 'outcome_unknown'
       })
-      const receipt = JSON.parse(await readFile(join(
-        deps.profileDirectory, 'conditional-worktree-removals', `${request.requestId}.json`
-      ), 'utf8'))
+      const receipt = JSON.parse(
+        await readFile(
+          join(deps.profileDirectory, 'conditional-worktree-removals', `${request.requestId}.json`),
+          'utf8'
+        )
+      )
       expect(receipt.phase).toBe('prepared')
       await expect(removeConditionalWorktree(request, deps)).resolves.toMatchObject({
-        status: 'refused', reason: 'outcome_unknown'
+        status: 'refused',
+        reason: 'outcome_unknown'
       })
     }
   )

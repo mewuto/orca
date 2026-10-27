@@ -1,4 +1,7 @@
-import { conditionalSnapshotWorkspacePresence, conditionalSessionWorkspacePresence } from '../conditional-workspace-session-presence'
+import {
+  conditionalSnapshotWorkspacePresence,
+  conditionalSessionWorkspacePresence
+} from '../conditional-workspace-session-presence'
 import { getEffectiveHooks } from '../../hooks'
 import type {
   ConditionalWorktreeRemoval,
@@ -123,7 +126,10 @@ export abstract class OrcaRuntimeWithConditionalWorktreeRemoval extends OrcaRunt
         if (terminals.terminals.length > 0 || terminals.totalCount !== 0) {
           return 'live'
         }
-        const match = createConditionalWorkspaceMatcher(expected.worktreeId, expected.executionHostId)
+        const match = createConditionalWorkspaceMatcher(
+          expected.worktreeId,
+          expected.executionHostId
+        )
         const presence = host.deps.store.conditionalRemovalWorkspacePresence(
           expected.worktreeId,
           expected.executionHostId
@@ -134,11 +140,20 @@ export abstract class OrcaRuntimeWithConditionalWorktreeRemoval extends OrcaRunt
         if (presence === 'present') {
           return 'live'
         }
-        const snapshots = conditionalSnapshotWorkspacePresence(inventory.snapshots, match, (workspace) => {
-          const repoId = splitWorktreeId(workspace)?.repoId
-          const hosts = new Set(store.getRepos().filter((row) => row.id === repoId).map(getRepoExecutionHostId))
-          return hosts.size === 1 ? hosts.values().next().value : undefined
-        })
+        const snapshots = conditionalSnapshotWorkspacePresence(
+          inventory.snapshots,
+          match,
+          (workspace) => {
+            const repoId = splitWorktreeId(workspace)?.repoId
+            const hosts = new Set(
+              store
+                .getRepos()
+                .filter((row) => row.id === repoId)
+                .map(getRepoExecutionHostId)
+            )
+            return hosts.size === 1 ? hosts.values().next().value : undefined
+          }
+        )
         if (snapshots !== 'idle') return snapshots
         const partitions = store.getWorkspaceSessionHostIds!()
         if (partitions.length > 100) {

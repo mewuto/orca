@@ -23,11 +23,16 @@ afterEach(async () => {
 
 async function fixture() {
   const { createBrowserTabInRenderer } = await import('./browser-tab-renderer-create')
-  const { tryAcquireConditionalWorktreeRemoval } = await import('../../ipc/conditional-worktree-removal-lease')
+  const { tryAcquireConditionalWorktreeRemoval } =
+    await import('../../ipc/conditional-worktree-removal-lease')
   const sender = { send: vi.fn() }
   // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: this helper accesses only the mock window's webContents identity and send method.
-  const host = { getAuthoritativeWindow: () => ({ webContents: sender }) } as unknown as Pick<RuntimeBrowserCommandHost, 'getAuthoritativeWindow'>
-  const run = () => createBrowserTabInRenderer(host, 'about:blank', `repo::${root}`, undefined, undefined)
+  const host = { getAuthoritativeWindow: () => ({ webContents: sender }) } as unknown as Pick<
+    RuntimeBrowserCommandHost,
+    'getAuthoritativeWindow'
+  >
+  const run = () =>
+    createBrowserTabInRenderer(host, 'about:blank', `repo::${root}`, undefined, undefined)
   const assertIdle = () => {
     const lease = tryAcquireConditionalWorktreeRemoval(root)
     expect(lease.kind).toBe('acquired')
@@ -36,22 +41,36 @@ async function fixture() {
   return { host, run, sender, assertIdle, busy: () => tryAcquireConditionalWorktreeRemoval(root) }
 }
 
-it.each(['window', 'uuid', 'listener'] as const)('releases a pre-send %s failure without changing its error', async (stage) => {
-  const f = await fixture()
-  const failure = new Error(`failed ${stage}`)
-  if (stage === 'window') f.host.getAuthoritativeWindow = () => { throw failure }
-  if (stage === 'uuid') mocks.uuid.mockImplementation(() => { throw failure })
-  if (stage === 'listener') mocks.on.mockImplementation(() => { throw failure })
-  await expect(f.run()).rejects.toBe(failure)
-  expect(f.sender.send).not.toHaveBeenCalled()
-  expect(vi.getTimerCount()).toBe(0)
-  f.assertIdle()
-})
+it.each(['window', 'uuid', 'listener'] as const)(
+  'releases a pre-send %s failure without changing its error',
+  async (stage) => {
+    const f = await fixture()
+    const failure = new Error(`failed ${stage}`)
+    if (stage === 'window')
+      f.host.getAuthoritativeWindow = () => {
+        throw failure
+      }
+    if (stage === 'uuid')
+      mocks.uuid.mockImplementation(() => {
+        throw failure
+      })
+    if (stage === 'listener')
+      mocks.on.mockImplementation(() => {
+        throw failure
+      })
+    await expect(f.run()).rejects.toBe(failure)
+    expect(f.sender.send).not.toHaveBeenCalled()
+    expect(vi.getTimerCount()).toBe(0)
+    f.assertIdle()
+  }
+)
 
 it('keeps an uncertain send exception admitted while cleaning its timer and listener', async () => {
   const f = await fixture()
   const failure = new Error('send failed')
-  f.sender.send.mockImplementation(() => { throw failure })
+  f.sender.send.mockImplementation(() => {
+    throw failure
+  })
   await expect(f.run()).rejects.toBe(failure)
   expect(vi.getTimerCount()).toBe(0)
   expect(mocks.remove).toHaveBeenCalledWith('browser:tabCreateReply', expect.any(Function))
@@ -73,7 +92,10 @@ it.each([false, true])('releases a matching reply, error=%s', async (failed) => 
   const result = f.run().catch((error: unknown) => error)
   const handler = mocks.on.mock.calls[0]?.[1]
   if (typeof handler !== 'function') throw new Error('Expected reply handler')
-  handler({ sender: f.sender }, { requestId: 'request', ...(failed ? { error: 'client error' } : { browserPageId: 'page' }) })
+  handler(
+    { sender: f.sender },
+    { requestId: 'request', ...(failed ? { error: 'client error' } : { browserPageId: 'page' }) }
+  )
   expect(await result).toEqual(failed ? new Error('client error') : { browserPageId: 'page' })
   expect(vi.getTimerCount()).toBe(0)
   f.assertIdle()

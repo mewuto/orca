@@ -28,8 +28,11 @@ export function createConditionalWorkspaceMatcher(workspaceId: string, execution
   }
   return (candidateId: string, candidateHostId: string | undefined): ConditionalWorkspaceMatch => {
     if (!candidateHostId) return 'unknown'
-    if (isWorktreeHostIdentity(candidateId) &&
-        getExecutionHostIdFromWorktreeHostIdentity(candidateId) !== candidateHostId) return 'unknown'
+    if (
+      isWorktreeHostIdentity(candidateId) &&
+      getExecutionHostIdFromWorktreeHostIdentity(candidateId) !== candidateHostId
+    )
+      return 'unknown'
     if (candidateHostId !== executionHostId) return 'different'
     candidateId = normalizeWorkspaceSessionKeyToWorkspaceId(candidateId)
     if (candidateId === workspaceId) return 'same'

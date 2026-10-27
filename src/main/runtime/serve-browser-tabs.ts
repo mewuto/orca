@@ -200,22 +200,24 @@ export class ServeBrowserTabs {
       ...(page.profileId ? { profileId: page.profileId } : {}),
       ...(page.groupId ? { groupId: page.groupId } : {})
     }
-    void this.applyLogged(applyLayout, worktreeId, command).then((ok) => {
-      const latest = this.pendingOpens.get(pageId)
-      this.pendingOpens.delete(pageId)
-      if (ok && latest) {
-        this.write(worktreeId, (_hostId, next) => withServeBrowserPageRecord(next, latest))
-      } else if (ok) {
-        // Closed while main wrote it: a host's tab is named by its page.
-        return this.applyLogged(applyLayout, worktreeId, {
-          type: 'closeTabs',
-          workspace: worktreeId,
-          tabIds: [pageId],
-          force: true
-        })
-      }
-      return undefined
-    }).finally(releaseConditionalUse)
+    void this.applyLogged(applyLayout, worktreeId, command)
+      .then((ok) => {
+        const latest = this.pendingOpens.get(pageId)
+        this.pendingOpens.delete(pageId)
+        if (ok && latest) {
+          this.write(worktreeId, (_hostId, next) => withServeBrowserPageRecord(next, latest))
+        } else if (ok) {
+          // Closed while main wrote it: a host's tab is named by its page.
+          return this.applyLogged(applyLayout, worktreeId, {
+            type: 'closeTabs',
+            workspace: worktreeId,
+            tabIds: [pageId],
+            force: true
+          })
+        }
+        return undefined
+      })
+      .finally(releaseConditionalUse)
   }
 
   private closeThroughLayout(

@@ -341,28 +341,39 @@ describe('browser client page reconciliation adapters', () => {
         await executor.handle(command('createPage'), new AbortController().signal)
         renderer.rekeyPage.mockImplementationOnce(async () => executor.beginAuthorityTransition())
       } else {
-        dependencies.guestBinding.bind.mockImplementationOnce(() => executor.beginAuthorityTransition())
+        dependencies.guestBinding.bind.mockImplementationOnce(() =>
+          executor.beginAuthorityTransition()
+        )
       }
       let finishCleanup = (): void => {}
-      const cleanupGate = new Promise<void>((resolve) => { finishCleanup = resolve })
+      const cleanupGate = new Promise<void>((resolve) => {
+        finishCleanup = resolve
+      })
       let cleanupStarted = (): void => {}
-      const started = new Promise<void>((resolve) => { cleanupStarted = resolve })
+      const started = new Promise<void>((resolve) => {
+        cleanupStarted = resolve
+      })
       renderer.retirePage.mockImplementation(async () => {
         cleanupStarted()
         await cleanupGate
       })
       let settled = false
-      const result = executor.handle(command(type), new AbortController().signal)
-        .then((value) => { settled = true; return value })
+      const result = executor.handle(command(type), new AbortController().signal).then((value) => {
+        settled = true
+        return value
+      })
       await started
       expect(settled).toBe(false)
       expect(routeWebContents.beginGuestRetirement).toHaveBeenCalledOnce()
-      expect(type === 'createPage'
-        ? dependencies.guestBinding.bind
-        : routeWebContents.rekeyGuestLifecycle).toHaveBeenCalledOnce()
+      expect(
+        type === 'createPage'
+          ? dependencies.guestBinding.bind
+          : routeWebContents.rekeyGuestLifecycle
+      ).toHaveBeenCalledOnce()
       finishCleanup()
       await expect(result).resolves.toEqual({
-        status: 'failed', errorCode: 'browser_client_page_executor_closed'
+        status: 'failed',
+        errorCode: 'browser_client_page_executor_closed'
       })
       expect(executor.snapshotPageInventory()).toEqual([])
     }
@@ -376,15 +387,19 @@ describe('browser client page reconciliation adapters', () => {
         await executor.handle(command('createPage'), new AbortController().signal)
         renderer.rekeyPage.mockImplementationOnce(async () => executor.beginAuthorityTransition())
       } else {
-        dependencies.guestBinding.bind.mockImplementationOnce(() => executor.beginAuthorityTransition())
+        dependencies.guestBinding.bind.mockImplementationOnce(() =>
+          executor.beginAuthorityTransition()
+        )
       }
-      renderer.retirePage.mockImplementationOnce(() => { throw new Error('retirement unavailable') })
+      renderer.retirePage.mockImplementationOnce(() => {
+        throw new Error('retirement unavailable')
+      })
       await expect(executor.handle(command(type), new AbortController().signal)).resolves.toEqual({
-        status: 'failed', errorCode: 'browser_client_page_cleanup_failed'
+        status: 'failed',
+        errorCode: 'browser_client_page_cleanup_failed'
       })
       expect(routeWebContents.beginGuestRetirement).toHaveBeenCalledOnce()
       expect(executor.hasPage('page-a', type === 'createPage' ? 7 : 8)).toBe(false)
     }
   )
-
 })

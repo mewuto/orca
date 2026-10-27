@@ -110,13 +110,19 @@ async function conditionalRemovalReadback(
       if (errorCode(error) !== 'ENOENT') return false
     }
     if (
-      (await conditionalGit(deps.repoPath, ['rev-parse', '--verify', retainedRef])) !== expected.head ||
-      (await conditionalGit(deps.repoPath, ['rev-parse', '--verify', expected.branch])) !== expected.head
-    ) return false
+      (await conditionalGit(deps.repoPath, ['rev-parse', '--verify', retainedRef])) !==
+        expected.head ||
+      (await conditionalGit(deps.repoPath, ['rev-parse', '--verify', expected.branch])) !==
+        expected.head
+    )
+      return false
     const listed = await conditionalGit(deps.repoPath, ['worktree', 'list', '--porcelain'])
-    if (parseWorktreeList(listed).some((worktree) =>
-      areWorktreePathsEqual(worktree.path, expected.checkout.path)
-    )) return false
+    if (
+      parseWorktreeList(listed).some((worktree) =>
+        areWorktreePathsEqual(worktree.path, expected.checkout.path)
+      )
+    )
+      return false
     return (await deps.verifyOccupant()) === 'absent'
   } catch {
     return false

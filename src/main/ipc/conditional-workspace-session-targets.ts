@@ -15,8 +15,8 @@ export function conditionalWorkspaceSessionTargets(
   const targets = new Map<string, { workspaceId: string; hostId: string | undefined }>()
   const incomplete = new Error('conditional_worktree_session_inventory_incomplete')
   const add = (key: string, hostId: string | undefined): void => {
-    if (isWorktreeHostIdentity(key) &&
-        getExecutionHostIdFromWorktreeHostIdentity(key) !== hostId) hostId = undefined
+    if (isWorktreeHostIdentity(key) && getExecutionHostIdFromWorktreeHostIdentity(key) !== hostId)
+      hostId = undefined
     const workspaceId = normalizeWorkspaceSessionKeyToWorkspaceId(key)
     targets.set(JSON.stringify([hostId, workspaceId]), { workspaceId, hostId })
     if (targets.size > 10000) throw incomplete
@@ -27,9 +27,14 @@ export function conditionalWorkspaceSessionTargets(
       add(session.activeWorkspaceKey, session.activeWorkspaceExecutionHostId ?? partitionHost)
     }
     for (const workspace of session.activeWorktreeIdsOnShutdown ?? []) add(workspace, partitionHost)
-    for (const map of [session.tabsByWorktree, session.openFilesByWorktree,
-      session.browserTabsByWorktree, session.browserPagesByWorkspace,
-      session.clientHostedBrowserPagesByWorktree, session.unifiedTabs]) {
+    for (const map of [
+      session.tabsByWorktree,
+      session.openFilesByWorktree,
+      session.browserTabsByWorktree,
+      session.browserPagesByWorkspace,
+      session.clientHostedBrowserPagesByWorktree,
+      session.unifiedTabs
+    ]) {
       for (const [workspace, rows] of Object.entries(map ?? {})) {
         if (rows.length) add(workspace, partitionHost)
       }

@@ -16,9 +16,11 @@ export function beginConditionalWorktreeSessionWrite(
   const releases: (() => void)[] = []
   try {
     for (const { workspaceId, hostId } of inventory.targets) {
-      releases.push(hostId && splitWorktreeId(workspaceId)?.worktreePath
-        ? beginConditionalWorktreeUse(workspaceId, hostId)
-        : beginConditionalWorktreeGlobalUse())
+      releases.push(
+        hostId && splitWorktreeId(workspaceId)?.worktreePath
+          ? beginConditionalWorktreeUse(workspaceId, hostId)
+          : beginConditionalWorktreeGlobalUse()
+      )
     }
     return () => {
       for (const release of releases) {
