@@ -181,7 +181,9 @@ export function closeUncommittedClientPage(
       (result) => {
         retireUncommittedClientPage(ledger, browserPageId, placement.pageHostGeneration)
         // Failed cleanup cannot prove a late-created page is absent.
-        if (result.status !== 'failed') releaseConditionalUse()
+        if (result.status !== 'failed') {
+          releaseConditionalUse()
+        }
       },
       () => retireUncommittedClientPage(ledger, browserPageId, placement.pageHostGeneration)
     )

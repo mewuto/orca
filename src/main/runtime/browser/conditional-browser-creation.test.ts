@@ -93,7 +93,9 @@ it.each(['client', 'offscreen', 'renderer'] as const)(
     await expect(pending).resolves.toEqual({ browserPageId: 'page' })
     const admission = tryAcquireConditionalWorktreeRemoval(root)
     expect(admission.kind).toBe('acquired')
-    if (admission.kind === 'acquired') admission.release()
+    if (admission.kind === 'acquired') {
+      admission.release()
+    }
   }
 )
 
@@ -102,7 +104,9 @@ it.each(['client', 'offscreen', 'renderer'] as const)(
   async (placement) => {
     const f = fixture(placement)
     const admission = tryAcquireConditionalWorktreeRemoval(root)
-    if (admission.kind !== 'acquired') throw new Error('Expected closing admission')
+    if (admission.kind !== 'acquired') {
+      throw new Error('Expected closing admission')
+    }
     try {
       await expect(f.run()).rejects.toThrow('removal is in progress')
       expect(f.resolveWorkspace).not.toHaveBeenCalled()

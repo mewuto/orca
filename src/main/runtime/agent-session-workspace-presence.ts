@@ -17,8 +17,12 @@ export function agentSessionWorkspacePresence(
   const match = createConditionalWorkspaceMatcher(workspaceId, executionHostId)
   for (const record of state.records.values()) {
     const presence = match(record.location.workspaceId, record.location.executionHostId)
-    if (presence === 'same') return 'present'
-    if (presence === 'unknown') return 'unknown'
+    if (presence === 'same') {
+      return 'present'
+    }
+    if (presence === 'unknown') {
+      return 'unknown'
+    }
   }
   return 'absent'
 }

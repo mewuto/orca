@@ -67,6 +67,8 @@ export async function createBrowserTabInRenderer(
   } finally {
     cleanupRequest()
     // Only pre-dispatch failure or an exact reply settles creation.
-    if (!sendStarted || replied) releaseConditionalUse()
+    if (!sendStarted || replied) {
+      releaseConditionalUse()
+    }
   }
 }

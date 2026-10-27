@@ -1,3 +1,5 @@
+import { computeAgentSessionPayloadFingerprint } from '../../../shared/agent-session-mutation-envelope'
+import type { performSend } from './structured-agent-session-turns'
 import type { AgentJournalMessageItem } from '../../../shared/agent-session-journal-types'
 import type { AgentSessionExecutionOptions } from '../../../shared/agent-session-execution-options'
 import type { reserveRequestFor } from './structured-agent-session-attach'
@@ -16,4 +18,22 @@ export function openingMessageOptions(options: Readonly<Record<string, string>> 
 } {
   const { model, effort } = options ?? {}
   return model ? { options: { model, ...(effort ? { effort } : {}) } } : {}
+}
+
+export function openingMessageParams(
+  sessionId: string,
+  firstMessage: NonNullable<StructuredAgentSessionCreateOptions['firstMessage']>,
+  options: Readonly<Record<string, string>> | undefined
+): Parameters<typeof performSend>[1] {
+  return {
+    ...firstMessage,
+    payloadFingerprint: computeAgentSessionPayloadFingerprint({
+      method: 'agentSession.send',
+      sessionId,
+      fields: { body: firstMessage.body }
+    }),
+    origin: 'client',
+    source: { kind: 'user' },
+    ...openingMessageOptions(options)
+  }
 }

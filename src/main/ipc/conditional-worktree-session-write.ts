@@ -12,7 +12,9 @@ export function beginConditionalWorktreeSessionWrite(
   host: string
 ): () => void {
   const inventory = conditionalWorkspaceSessionTargets(session, host)
-  if (!inventory.complete) return beginConditionalWorktreeGlobalUse()
+  if (!inventory.complete) {
+    return beginConditionalWorktreeGlobalUse()
+  }
   const releases: (() => void)[] = []
   try {
     for (const { workspaceId, hostId } of inventory.targets) {

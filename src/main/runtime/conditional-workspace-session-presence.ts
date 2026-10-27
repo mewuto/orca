@@ -19,20 +19,28 @@ export function conditionalSnapshotWorkspacePresence(
   match: MatchWorkspace,
   resolveHost: (workspaceId: string) => string | undefined
 ): Presence {
-  if (snapshots.length > 10000) return 'unknown'
+  if (snapshots.length > 10000) {
+    return 'unknown'
+  }
   for (const snapshot of snapshots) {
     if (
       !snapshot.tabs.length &&
       !snapshot.initialSurfaceLaunch &&
       !snapshot.agentSessionsUnverifiable &&
       !snapshot.clientHostedPagesUnreconciled
-    )
+    ) {
       continue
+    }
     const matches = match(snapshot.worktree, resolveHost(snapshot.worktree))
-    if (matches === 'unknown') return 'unknown'
-    if (matches === 'different') continue
-    if (snapshot.agentSessionsUnverifiable || snapshot.clientHostedPagesUnreconciled)
+    if (matches === 'unknown') {
       return 'unknown'
+    }
+    if (matches === 'different') {
+      continue
+    }
+    if (snapshot.agentSessionsUnverifiable || snapshot.clientHostedPagesUnreconciled) {
+      return 'unknown'
+    }
     return 'live'
   }
   return 'idle'
@@ -45,11 +53,17 @@ export function conditionalSessionWorkspacePresence(
 ): Presence {
   try {
     const inventory = conditionalWorkspaceSessionTargets(session, hostId)
-    if (!inventory.complete) return 'unknown'
+    if (!inventory.complete) {
+      return 'unknown'
+    }
     for (const target of inventory.targets) {
       const matches = match(target.workspaceId, target.hostId)
-      if (matches === 'unknown') return 'unknown'
-      if (matches === 'same') return 'live'
+      if (matches === 'unknown') {
+        return 'unknown'
+      }
+      if (matches === 'same') {
+        return 'live'
+      }
     }
   } catch {
     return 'unknown'

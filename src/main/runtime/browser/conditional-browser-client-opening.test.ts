@@ -78,13 +78,17 @@ it('keeps openUrl admitted until the created client page is published', async ()
   })
   const admission = tryAcquireConditionalWorktreeRemoval(root)
   expect(admission.kind).toBe('acquired')
-  if (admission.kind === 'acquired') admission.release()
+  if (admission.kind === 'acquired') {
+    admission.release()
+  }
 })
 
 it('refuses openUrl before workspace resolution or a create command', () => {
   const f = fixture()
   const admission = tryAcquireConditionalWorktreeRemoval(root)
-  if (admission.kind !== 'acquired') throw new Error('Expected closing admission')
+  if (admission.kind !== 'acquired') {
+    throw new Error('Expected closing admission')
+  }
   try {
     expect(() =>
       openBrowserUrlOnClient(f.host, { url: 'https://example.invalid/', worktree: `repo::${root}` })

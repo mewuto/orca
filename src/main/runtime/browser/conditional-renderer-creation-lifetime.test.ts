@@ -36,7 +36,9 @@ async function fixture() {
   const assertIdle = () => {
     const lease = tryAcquireConditionalWorktreeRemoval(root)
     expect(lease.kind).toBe('acquired')
-    if (lease.kind === 'acquired') lease.release()
+    if (lease.kind === 'acquired') {
+      lease.release()
+    }
   }
   return { host, run, sender, assertIdle, busy: () => tryAcquireConditionalWorktreeRemoval(root) }
 }
@@ -46,18 +48,21 @@ it.each(['window', 'uuid', 'listener'] as const)(
   async (stage) => {
     const f = await fixture()
     const failure = new Error(`failed ${stage}`)
-    if (stage === 'window')
+    if (stage === 'window') {
       f.host.getAuthoritativeWindow = () => {
         throw failure
       }
-    if (stage === 'uuid')
+    }
+    if (stage === 'uuid') {
       mocks.uuid.mockImplementation(() => {
         throw failure
       })
-    if (stage === 'listener')
+    }
+    if (stage === 'listener') {
       mocks.on.mockImplementation(() => {
         throw failure
       })
+    }
     await expect(f.run()).rejects.toBe(failure)
     expect(f.sender.send).not.toHaveBeenCalled()
     expect(vi.getTimerCount()).toBe(0)
@@ -91,7 +96,9 @@ it.each([false, true])('releases a matching reply, error=%s', async (failed) => 
   const f = await fixture()
   const result = f.run().catch((error: unknown) => error)
   const handler = mocks.on.mock.calls[0]?.[1]
-  if (typeof handler !== 'function') throw new Error('Expected reply handler')
+  if (typeof handler !== 'function') {
+    throw new Error('Expected reply handler')
+  }
   handler(
     { sender: f.sender },
     { requestId: 'request', ...(failed ? { error: 'client error' } : { browserPageId: 'page' }) }

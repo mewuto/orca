@@ -22,7 +22,9 @@ afterEach(async () => {
 })
 
 async function flush(): Promise<void> {
-  for (let index = 0; index < 12; index++) await Promise.resolve()
+  for (let index = 0; index < 12; index++) {
+    await Promise.resolve()
+  }
 }
 
 async function fixture(kind: 'restore' | 'reclaim') {
@@ -59,7 +61,9 @@ async function fixture(kind: 'restore' | 'reclaim') {
     }
   })
   const ledger = state.commandLedger
-  if (!ledger) throw new Error('Expected negotiated ledger')
+  if (!ledger) {
+    throw new Error('Expected negotiated ledger')
+  }
   const events: BrowserClientHostCommandEvent[] = []
   ledger.attach((event) => events.push(event))
   state.executionHostGrants.grant('route')
@@ -80,13 +84,17 @@ async function fixture(kind: 'restore' | 'reclaim') {
     orchestrator.adopt(state, [intent], options).catch((error: unknown) => error)
   const settle = (result: BrowserClientHostCommandResult) => {
     const event = events[0]
-    if (!event) throw new Error('Expected dispatched action')
+    if (!event) {
+      throw new Error('Expected dispatched action')
+    }
     return ledger.settle({ ...event, result })
   }
   const assertIdle = () => {
     const lease = tryAcquireConditionalWorktreeRemoval(root)
     expect(lease.kind).toBe('acquired')
-    if (lease.kind === 'acquired') lease.release()
+    if (lease.kind === 'acquired') {
+      lease.release()
+    }
   }
   return {
     state,

@@ -50,7 +50,9 @@ it.each([null, 'repo::/elsewhere'])(
   (active) => {
     const f = fixture(active)
     const lease = tryAcquireConditionalWorktreeRemoval(root)
-    if (lease.kind !== 'acquired') throw new Error('Expected closing admission')
+    if (lease.kind !== 'acquired') {
+      throw new Error('Expected closing admission')
+    }
     try {
       expect(() => f.patch({ activeWorkspaceKey: `worktree:${f.target}` })).toThrow(
         'removal is in progress'
@@ -68,7 +70,9 @@ it('refuses a host-only patch moving an existing key onto the closing host', () 
   f.state.workspaceSession.activeWorkspaceKey = `worktree:${f.target}`
   f.state.workspaceSession.activeWorkspaceExecutionHostId = 'ssh:other'
   const lease = tryAcquireConditionalWorktreeRemoval(root)
-  if (lease.kind !== 'acquired') throw new Error('Expected closing admission')
+  if (lease.kind !== 'acquired') {
+    throw new Error('Expected closing admission')
+  }
   try {
     expect(() => f.patch({ activeWorkspaceExecutionHostId: 'local' })).toThrow(
       'removal is in progress'
@@ -82,7 +86,9 @@ it('refuses a host-only patch moving an existing key onto the closing host', () 
 it('keeps a proven different host separate even with the same path', () => {
   const f = fixture(null)
   const lease = tryAcquireConditionalWorktreeRemoval(root)
-  if (lease.kind !== 'acquired') throw new Error('Expected closing admission')
+  if (lease.kind !== 'acquired') {
+    throw new Error('Expected closing admission')
+  }
   try {
     f.patch({
       activeWorkspaceKey: `worktree:${f.target}`,

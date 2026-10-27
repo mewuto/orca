@@ -45,17 +45,22 @@ function fixture() {
   const scheduling = {} as ConstructorParameters<typeof SessionSnapshotOperations>[3]
   const operations = new SessionSnapshotOperations(runtime, sessions, binding, scheduling)
   const write = (route: 'set' | 'patch' | 'unload') => {
-    if (route === 'set') operations.setWorkspaceSession({ ...state.workspaceSession })
-    else if (route === 'unload')
+    if (route === 'set') {
+      operations.setWorkspaceSession({ ...state.workspaceSession })
+    } else if (route === 'unload') {
       operations.stageWorkspaceSessionBeforeUnload({ ...state.workspaceSession })
-    else operations.patchWorkspaceSession({ activeWorkspaceExecutionHostId: 'local' })
+    } else {
+      operations.patchWorkspaceSession({ activeWorkspaceExecutionHostId: 'local' })
+    }
   }
   return { state, write }
 }
 function assertIdle() {
   const lease = tryAcquireConditionalWorktreeRemoval(removalPath)
   expect(lease.kind).toBe('acquired')
-  if (lease.kind === 'acquired') lease.release()
+  if (lease.kind === 'acquired') {
+    lease.release()
+  }
 }
 
 it.each([10000, 10001])('distinguishes complete inventory at %i targets', (count) => {
@@ -89,7 +94,9 @@ it.each(['set', 'patch', 'unload'] as const)(
     const f = fixture()
     const prior = f.state.workspaceSession
     const lease = tryAcquireConditionalWorktreeRemoval(removalPath)
-    if (lease.kind !== 'acquired') throw new Error('Expected closing admission')
+    if (lease.kind !== 'acquired') {
+      throw new Error('Expected closing admission')
+    }
     try {
       expect(() => f.write(route)).toThrow('removal is in progress')
       expect(f.state.workspaceSession).toBe(prior)

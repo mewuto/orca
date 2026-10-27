@@ -115,13 +115,19 @@ describe('conditional removal transaction with real Git fixtures', () => {
     'keeps the prepared receipt when first-success readback finds changed %s',
     async (changed) => {
       deps.finishMetadata = async () => {
-        if (changed === 'checkout') await mkdir(checkout)
+        if (changed === 'checkout') {
+          await mkdir(checkout)
+        }
         if (changed === 'registration') {
           await git(repo, 'worktree', 'add', '--detach', checkout, request.expected.head)
           await rm(checkout, { recursive: true, force: true })
         }
-        if (changed === 'occupant') deps.verifyOccupant = async () => 'changed'
-        if (changed === 'branch') await git(repo, 'update-ref', '-d', request.expected.branch)
+        if (changed === 'occupant') {
+          deps.verifyOccupant = async () => 'changed'
+        }
+        if (changed === 'branch') {
+          await git(repo, 'update-ref', '-d', request.expected.branch)
+        }
         if (changed === 'retained-ref') {
           await git(repo, 'update-ref', '-d', `refs/orca-retained-worktrees/${request.requestId}`)
         }

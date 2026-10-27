@@ -1,11 +1,10 @@
 import { agentSessionConversationView } from '../../../shared/agent-session-conversation-view'
-import { openingMessageOptions } from './structured-agent-session-create-options'
+import { openingMessageParams } from './structured-agent-session-create-options'
 import type { StructuredAgentSessionCreateOptions } from './structured-agent-session-create-options'
 export type { StructuredAgentSessionCreateOptions } from './structured-agent-session-create-options'
 import { withConditionalWorktreeUses } from '../../ipc/conditional-worktree-operation'
 import { isFloatingWorkspaceId } from '../../../shared/floating-workspace-worktree'
 import { isAgentSessionCreateAdmissionRefusal } from '../../../shared/agent-session-definitive-refusal'
-import { computeAgentSessionPayloadFingerprint } from '../../../shared/agent-session-mutation-envelope'
 import {
   refuse,
   type AgentSessionAttachResult,
@@ -211,17 +210,7 @@ async function foundConversation(
             operationReceipt: observedReceipt(store, store.founding.receipt(request)),
             now: context.now
           },
-          {
-            ...first,
-            payloadFingerprint: computeAgentSessionPayloadFingerprint({
-              method: 'agentSession.send',
-              sessionId,
-              fields: { body: first.body }
-            }),
-            origin: 'client',
-            source: { kind: 'user' },
-            ...openingMessageOptions(candidate.record.options)
-          }
+          openingMessageParams(sessionId, first, candidate.record.options)
         )
         if (!sent.ok) {
           return sent

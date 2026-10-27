@@ -179,8 +179,9 @@ export class BrowserHostPageReconciliationActions {
         ['browser_client_page_executor_closed', 'browser_client_page_command_invalid'].includes(
           result.errorCode
         )
-      )
+      ) {
         this.releaseAdmission(browserPageId)
+      }
       return result
     })
     const result = await waitForCommandResult(settled, signal)

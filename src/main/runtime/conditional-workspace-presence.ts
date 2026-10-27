@@ -13,12 +13,16 @@ export function createConditionalWorkspaceMatcher(workspaceId: string, execution
   const expected = splitWorktreeIdForFilesystem(workspaceId)
   const paths = new Map<string, string | null>()
   const physicalPath = (path: string): string | null => {
-    if (paths.has(path)) return paths.get(path) ?? null
+    if (paths.has(path)) {
+      return paths.get(path) ?? null
+    }
     let canonical: string | null = null
     try {
       if (isAbsolute(path)) {
         const directory = statSync(realpathSync.native(path), { bigint: true })
-        if (directory.isDirectory()) canonical = `${directory.dev}:${directory.ino}`
+        if (directory.isDirectory()) {
+          canonical = `${directory.dev}:${directory.ino}`
+        }
       }
     } catch {
       // Unresolvable saved identities cannot prove absence.
@@ -27,20 +31,31 @@ export function createConditionalWorkspaceMatcher(workspaceId: string, execution
     return canonical
   }
   return (candidateId: string, candidateHostId: string | undefined): ConditionalWorkspaceMatch => {
-    if (!candidateHostId) return 'unknown'
+    if (!candidateHostId) {
+      return 'unknown'
+    }
     if (
       isWorktreeHostIdentity(candidateId) &&
       getExecutionHostIdFromWorktreeHostIdentity(candidateId) !== candidateHostId
-    )
+    ) {
       return 'unknown'
-    if (candidateHostId !== executionHostId) return 'different'
+    }
+    if (candidateHostId !== executionHostId) {
+      return 'different'
+    }
     candidateId = normalizeWorkspaceSessionKeyToWorkspaceId(candidateId)
-    if (candidateId === workspaceId) return 'same'
+    if (candidateId === workspaceId) {
+      return 'same'
+    }
     const candidate = splitWorktreeIdForFilesystem(candidateId)
-    if (!expected || !candidate) return 'unknown'
+    if (!expected || !candidate) {
+      return 'unknown'
+    }
     const left = physicalPath(expected.worktreePath)
     const right = physicalPath(candidate.worktreePath)
-    if (left === null || right === null) return 'unknown'
+    if (left === null || right === null) {
+      return 'unknown'
+    }
     return left === right ? 'same' : 'different'
   }
 }

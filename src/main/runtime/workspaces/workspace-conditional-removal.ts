@@ -154,7 +154,9 @@ export abstract class OrcaRuntimeWithConditionalWorktreeRemoval extends OrcaRunt
             return hosts.size === 1 ? hosts.values().next().value : undefined
           }
         )
-        if (snapshots !== 'idle') return snapshots
+        if (snapshots !== 'idle') {
+          return snapshots
+        }
         const partitions = store.getWorkspaceSessionHostIds!()
         if (partitions.length > 100) {
           return 'unknown'
@@ -162,7 +164,9 @@ export abstract class OrcaRuntimeWithConditionalWorktreeRemoval extends OrcaRunt
         for (const partition of partitions) {
           const session = store.getWorkspaceSession!(partition)
           const presence = conditionalSessionWorkspacePresence(session, partition, match)
-          if (presence !== 'idle') return presence
+          if (presence !== 'idle') {
+            return presence
+          }
         }
         return 'idle'
       },
