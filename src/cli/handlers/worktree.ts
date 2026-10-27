@@ -19,7 +19,6 @@ import { RuntimeClientError } from '../runtime-client'
 import {
   getOptionalPositiveIntegerFlag,
   getOptionalStringFlag,
-  getPresentStringFlag,
   getRequiredStringFlag
 } from '../flags'
 import {

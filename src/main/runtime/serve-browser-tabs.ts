@@ -214,6 +214,7 @@ export class ServeBrowserTabs {
           force: true
         })
       }
+      return undefined
     }).finally(releaseConditionalUse)
   }
 
