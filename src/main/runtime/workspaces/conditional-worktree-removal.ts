@@ -1,8 +1,8 @@
 import { parseWorktreeList } from '../../../shared/git-worktree-porcelain-parser'
 import { areWorktreePathsEqual } from '../../git/worktree-path-comparison'
-import { mkdir, open, rename, lstat } from 'node:fs/promises'
+import { mkdir, open, rename, lstat, unlink } from 'node:fs/promises'
 import { join } from 'node:path'
-import { createHash } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { tryAcquireConditionalWorktreeRemoval } from '../../ipc/conditional-worktree-removal-lease'
 import { tryAcquireIdleWatcherRemovalGate } from '../../ipc/watcher-removal-gate'
 import type {
@@ -72,6 +72,29 @@ async function syncReceiptDirectory(path: string): Promise<void> {
     await directory.sync()
   } finally {
     await directory.close()
+  }
+}
+
+async function writeRemovedReceipt(
+  receiptPath: string,
+  directory: string,
+  fingerprint: string,
+  request: ConditionalWorktreeRemovalRequest,
+  retainedRef: string
+): Promise<void> {
+  const temporaryPath = `${receiptPath}.${randomUUID()}.complete`
+  try {
+    await writeReceiptExclusive(temporaryPath, {
+      phase: 'removed',
+      fingerprint,
+      request,
+      retainedRef
+    })
+    await rename(temporaryPath, receiptPath)
+    await syncReceiptDirectory(directory)
+  } catch (error) {
+    await unlink(temporaryPath).catch(() => {})
+    throw error
   }
 }
 
@@ -189,6 +212,10 @@ export async function removeConditionalWorktree(
       if (!(await conditionalRemovalReadback(request, deps, retainedRef))) {
         return refused('outcome_unknown')
       }
+      if (prior.phase === 'prepared') {
+        await deps.finishMetadata()
+        await writeRemovedReceipt(receiptPath, directory, fingerprint, request, retainedRef)
+      }
       return result
     }
     if ((await deps.verifyOccupant()) !== 'same') {
@@ -227,10 +254,7 @@ export async function removeConditionalWorktree(
     if (!(await conditionalRemovalReadback(request, deps, retainedRef))) {
       return refused('outcome_unknown')
     }
-    const temp = `${receiptPath}.complete`
-    await writeReceiptExclusive(temp, { phase: 'removed', fingerprint, request, retainedRef })
-    await rename(temp, receiptPath)
-    await syncReceiptDirectory(directory)
+    await writeRemovedReceipt(receiptPath, directory, fingerprint, request, retainedRef)
     return result
   } catch (error) {
     if (prepared) {

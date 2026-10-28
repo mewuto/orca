@@ -100,6 +100,7 @@ export function registerBrowserHandlers(): void {
         agentBrowserBridgeRef.onProcessSwap(args.browserPageId, args.webContentsId, previousWcId)
       }
       resolveTabRegistrationWaiters(args.browserPageId, args.worktreeId)
+      announceRegisteredBrowserExtensionTab(args.browserPageId, args.webContentsId)
       return true
     } finally {
       releaseConditionalUse()

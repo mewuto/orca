@@ -162,6 +162,31 @@ describe('conditional removal transaction with real Git fixtures', () => {
     expect(deps.finishMetadata).toHaveBeenCalledTimes(1)
   })
 
+  it('retries metadata cleanup when removal stopped after preparing its receipt', async () => {
+    let attempts = 0
+    deps.finishMetadata = vi.fn(async () => {
+      attempts += 1
+      if (attempts === 1) {
+        throw new Error('simulated interruption')
+      }
+    })
+
+    await expect(removeConditionalWorktree(request, deps)).resolves.toMatchObject({
+      status: 'refused',
+      reason: 'outcome_unknown'
+    })
+    await expect(access(checkout)).rejects.toThrow()
+
+    await expect(removeConditionalWorktree(request, deps)).resolves.toMatchObject({
+      status: 'removed'
+    })
+    expect(deps.finishMetadata).toHaveBeenCalledTimes(2)
+    await expect(removeConditionalWorktree(request, deps)).resolves.toMatchObject({
+      status: 'removed'
+    })
+    expect(deps.finishMetadata).toHaveBeenCalledTimes(2)
+  })
+
   it.each(['live', 'unknown'] as const)(
     'refuses %s sessions without creating retention state',
     async (state) => {
