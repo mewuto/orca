@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
-import { mkdtemp, mkdir, writeFile, readFile, realpath, rm, lstat, access } from 'node:fs/promises'
+import { mkdtemp, mkdir, writeFile, readFile, realpath, rm, access } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { randomUUID } from 'node:crypto'
@@ -52,8 +52,10 @@ let scratch: string,
   repo: string,
   checkout: string,
   request: ConditionalWorktreeRemovalRequest,
-  deps: ConditionalWorktreeRemovalDependencies
+  deps: ConditionalWorktreeRemovalDependencies,
+  occupant: 'same' | 'absent' | 'changed'
 beforeEach(async () => {
+  occupant = 'same'
   scratch = await realpath(await mkdtemp(join(tmpdir(), 'orca-idle-removal-')))
   repo = join(scratch, 'repo')
   checkout = join(scratch, 'checkout')
@@ -93,16 +95,11 @@ beforeEach(async () => {
     repoPath: repo,
     profileDirectory: join(scratch, 'profile'),
     supported: true,
-    verifyOccupant: async () => {
-      try {
-        await lstat(checkout)
-        return 'same'
-      } catch {
-        return 'absent'
-      }
-    },
+    verifyOccupant: async () => occupant,
     verifyIdle: async () => 'idle',
-    finishMetadata: vi.fn(async () => {})
+    finishMetadata: vi.fn(async () => {
+      occupant = 'absent'
+    })
   }
 })
 afterEach(async () => {
@@ -145,7 +142,7 @@ describe('conditional removal transaction with real Git fixtures', () => {
       expect(receipt.phase).toBe('prepared')
       await expect(removeConditionalWorktree(request, deps)).resolves.toMatchObject({
         status: 'refused',
-        reason: 'outcome_unknown'
+        reason: changed === 'occupant' ? 'identity_changed' : 'outcome_unknown'
       })
     }
   )
@@ -169,6 +166,7 @@ describe('conditional removal transaction with real Git fixtures', () => {
       if (attempts === 1) {
         throw new Error('simulated interruption')
       }
+      occupant = 'absent'
     })
 
     await expect(removeConditionalWorktree(request, deps)).resolves.toMatchObject({

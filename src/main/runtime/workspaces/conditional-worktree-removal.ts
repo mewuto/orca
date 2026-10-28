@@ -119,7 +119,7 @@ async function boundedIdle(
   }
 }
 
-async function conditionalRemovalReadback(
+async function conditionalGitRemovalReadback(
   request: ConditionalWorktreeRemovalRequest,
   deps: ConditionalWorktreeRemovalDependencies,
   retainedRef: string
@@ -150,10 +150,19 @@ async function conditionalRemovalReadback(
     ) {
       return false
     }
-    return (await deps.verifyOccupant()) === 'absent'
+    return true
   } catch {
     return false
   }
+}
+
+async function conditionalRemovalReadback(
+  request: ConditionalWorktreeRemovalRequest,
+  deps: ConditionalWorktreeRemovalDependencies,
+  retainedRef: string
+): Promise<boolean> {
+  return (await conditionalGitRemovalReadback(request, deps, retainedRef)) &&
+    (await deps.verifyOccupant()) === 'absent'
 }
 
 export async function removeConditionalWorktree(
@@ -209,12 +218,23 @@ export async function removeConditionalWorktree(
         return refused('identity_changed')
       }
       // A retry must never delete a surviving or replacement checkout.
-      if (!(await conditionalRemovalReadback(request, deps, retainedRef))) {
-        return refused('outcome_unknown')
-      }
       if (prior.phase === 'prepared') {
-        await deps.finishMetadata()
+        if (!(await conditionalGitRemovalReadback(request, deps, retainedRef))) {
+          return refused('outcome_unknown')
+        }
+        const occupant = await deps.verifyOccupant()
+        if (occupant === 'changed') {
+          return refused('identity_changed')
+        }
+        if (occupant === 'same') {
+          await deps.finishMetadata()
+        }
+        if (!(await conditionalRemovalReadback(request, deps, retainedRef))) {
+          return refused('outcome_unknown')
+        }
         await writeRemovedReceipt(receiptPath, directory, fingerprint, request, retainedRef)
+      } else if (!(await conditionalRemovalReadback(request, deps, retainedRef))) {
+        return refused('outcome_unknown')
       }
       return result
     }
